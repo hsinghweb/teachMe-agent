@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeachMe — AI Teaching Assistant</title>
+    <meta name="description" content="TeachMe is an AI-powered teaching assistant that helps Indian school students study textbook chapters with personalized plans, interactive teaching, and progress tracking.">
+
+    <!-- Google Fonts — Inter for modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ===================================================================
+         TeachMe — HTML/CSS/JS Frontend
+         Connects to ADK api_server REST endpoints for agent interaction.
+         =================================================================== -->
+
+    <div class="app-container">
+        <!-- ===============================================================
+             Sidebar — Profile, Upload, Progress
+             =============================================================== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1 class="logo">📚 TeachMe</h1>
+                <p class="tagline">Your AI Study Buddy</p>
+            </div>
+
+            <!-- Onboarding Form (shown when no profile exists) -->
+            <div class="onboarding-section" id="onboarding-section">
+                <h2 class="section-title">🎓 Create Your Profile</h2>
+                <form id="profile-form" class="profile-form">
+                    <div class="form-group">
+                        <label for="student-name">Your Name</label>
+                        <input type="text" id="student-name" placeholder="e.g., Aarav Sharma" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-age">Age</label>
+                        <input type="number" id="student-age" min="8" max="20" placeholder="e.g., 14" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-class">Class</label>
+                        <select id="student-class" required>
+                            <option value="">Select Class</option>
+                            <option value="6">Class 6</option>
+                            <option value="7">Class 7</option>
+                            <option value="8">Class 8</option>
+                            <option value="9">Class 9</option>
+                            <option value="10">Class 10</option>
+                            <option value="11">Class 11</option>
+                            <option value="12">Class 12</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-board">Board</label>
+                        <select id="student-board" required>
+                            <option value="">Select Board</option>
+                            <option value="CBSE">CBSE</option>
+                            <option value="ICSE">ICSE</option>
+                            <option value="State Board">State Board</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-medium">Medium</label>
+                        <select id="student-medium" required>
+                            <option value="">Select Medium</option>
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="Marathi">Marathi</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Profile ✨</button>
+                </form>
+            </div>
+
+            <!-- Profile Display (shown after profile creation) -->
+            <div class="profile-display hidden" id="profile-display">
+                <h2 class="section-title">👤 Your Profile</h2>
+                <div class="profile-card">
+                    <div class="profile-name" id="display-name">Student</div>
+                    <div class="profile-details">
+                        <span class="badge badge-class" id="display-class">Class ?</span>
+                        <span class="badge badge-board" id="display-board">Board</span>
+                        <span class="badge badge-medium" id="display-medium">Medium</span>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-sessions">0</div>
+                        <div class="stat-label">Sessions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-accuracy">0%</div>
+                        <div class="stat-label">Accuracy</div>
+                    </div>
+                </div>
+
+                <!-- Chapter Progress -->
+                <div class="progress-section" id="progress-section">
+                    <h3 class="section-subtitle">📊 Chapter Progress</h3>
+                    <div id="progress-list">
+                        <!-- Populated dynamically by JS -->
+                        <p class="empty-state">No chapters studied yet. Upload a PDF to begin!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF Upload -->
+            <div class="upload-section">
+                <h2 class="section-title">📄 Upload Chapter PDF</h2>
+                <div class="upload-area" id="upload-area">
+                    <input type="file" id="pdf-upload" accept=".pdf" hidden>
+                    <div class="upload-content" onclick="document.getElementById('pdf-upload').click()">
+                        <span class="upload-icon">📁</span>
+                        <span class="upload-text">Click to upload PDF</span>
+                        <span class="upload-hint">NCERT or textbook chapters</span>
+                    </div>
+                </div>
+                <div class="uploaded-file hidden" id="uploaded-file">
+                    <span class="file-icon">📎</span>
+                    <span class="file-name" id="uploaded-file-name"></span>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2 class="section-title">⚡ Quick Actions</h2>
+                <div class="action-buttons">
+                    <button class="btn btn-action" onclick="sendQuickAction('create a study plan for my uploaded chapter')">
+                        📋 New Plan
+                    </button>
+                    <button class="btn btn-action" onclick="sendQuickAction('I am ready for a quiz on what I studied')">
+                        ✅ Take Quiz
+                    </button>
+                    <button class="btn btn-action" onclick="sendQuickAction('teach me the next topic from my study plan')">
+                        📖 Teach Me
+                    </button>
+                    <button class="btn btn-action" onclick="sendQuickAction('show me my progress and mastery levels')">
+                        📊 My Progress
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ===============================================================
+             Main Chat Area
+             =============================================================== -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="chat-header">
+                <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+                <div class="header-info">
+                    <h1>📚 TeachMe</h1>
+                    <p>Upload a chapter, get a plan, learn, and ace your exams!</p>
+                </div>
+                <div class="header-status">
+                    <span class="status-dot" id="status-dot"></span>
+                    <span class="status-text" id="status-text">Ready</span>
+                </div>
+            </header>
+
+            <!-- Study Mode Selector -->
+            <div class="mode-selector" id="mode-selector">
+                <span class="mode-label">Study Mode:</span>
+                <button class="mode-btn active" data-mode="normal" onclick="setStudyMode('normal', this)">📖 Normal</button>
+                <button class="mode-btn" data-mode="exam_prep" onclick="setStudyMode('exam_prep', this)">🎯 Exam Prep</button>
+                <button class="mode-btn" data-mode="quick_revision" onclick="setStudyMode('quick_revision', this)">⚡ Quick Revision</button>
+                <button class="mode-btn" data-mode="class_test" onclick="setStudyMode('class_test', this)">📝 Class Test</button>
+            </div>
+
+            <!-- Chat Messages Area -->
+            <div class="chat-messages" id="chat-messages">
+                <!-- Welcome Message -->
+                <div class="message agent-message">
+                    <div class="message-avatar">📚</div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            <strong>Welcome to TeachMe!</strong> 📚✨
+                            <br><br>
+                            I'm your AI study buddy, designed to help you study your textbook chapters effectively.
+                            <br><br>
+                            <strong>Here's how I can help:</strong>
+                            <ol>
+                                <li>📋 <strong>Create your profile</strong> — Fill the form in the sidebar</li>
+                                <li>📄 <strong>Upload a chapter PDF</strong> — Your textbook chapter</li>
+                                <li>📝 <strong>Get a study plan</strong> — Personalized to your needs</li>
+                                <li>📖 <strong>Learn topics</strong> — With simple explanations</li>
+                                <li>✅ <strong>Take quizzes</strong> — Track your progress!</li>
+                            </ol>
+                            <br>
+                            <strong>Start by creating your profile in the sidebar! 🎓</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="chat-input-area">
+                <div class="input-container">
+                    <textarea
+                        id="chat-input"
+                        placeholder="Ask me anything about your studies... 💬"
+                        rows="1"
+                        onkeydown="handleKeyDown(event)"
+                    ></textarea>
+                    <button class="send-btn" id="send-btn" onclick="sendMessage()">
+                        <span class="send-icon">➤</span>
+                    </button>
+                </div>
+                <p class="input-hint">Press Enter to send, Shift+Enter for new line</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

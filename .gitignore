@@ -1,0 +1,43 @@
+# =============================================================================
+# TeachMe Agent — .gitignore
+# =============================================================================
+
+# Environment variables (NEVER commit API keys!)
+.env
+teachme/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# UV
+uv.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data — uploaded PDFs (may be large / copyrighted)
+data/uploads/
+
+# Streamlit
+.streamlit/
+
+# Logs
+*.log
