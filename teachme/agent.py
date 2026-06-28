@@ -25,29 +25,39 @@
 # tool server that can be connected via SSE/HTTP for production deployment.
 # =============================================================================
 
+import sys
+from pathlib import Path
 from google.adk.agents import Agent
+from google.adk.tools.mcp_tool import MCPToolset, StdioConnectionParams
+from mcp.client.stdio import StdioServerParameters
 
 # ---------------------------------------------------------------------------
-# Import tool functions directly from our MCP server module.
-# These are the same functions exposed via FastMCP — we just call them
-# directly as ADK FunctionTools for reliable local execution.
-# For remote/production use, connect via MCPToolset + SSE transport.
+# Resolve paths for MCP server
 # ---------------------------------------------------------------------------
-from mcp_server.server import (
-    parse_pdf,
-    save_profile,
-    get_profile,
-    save_progress,
-    get_progress,
-    save_study_plan,
-    get_study_plan,
-)
+PROJECT_ROOT = Path(__file__).parent.parent
+MCP_SERVER_PATH = PROJECT_ROOT / "mcp_server" / "server.py"
 
-# Collect tools into groups by agent responsibility
-PROFILE_TOOLS = [save_profile, get_profile]
-PLANNER_TOOLS = [parse_pdf, get_profile, save_study_plan, get_study_plan]
-TEACHER_TOOLS = [parse_pdf, get_profile, get_study_plan]
-EVALUATOR_TOOLS = [parse_pdf, get_profile, save_progress, get_progress]
+def get_mcp_server_params() -> StdioConnectionParams:
+    """
+    Returns the connection parameters for the TeachMe MCP server.
+    Uses stdio transport for local development.
+    """
+    return StdioConnectionParams(
+        server_params=StdioServerParameters(
+            command=sys.executable,
+            args=[str(MCP_SERVER_PATH)],
+        )
+    )
+
+def get_mcp_tools():
+    """
+    Helper to create an MCPToolset connection to our local MCP server.
+    """
+    return [
+        MCPToolset(
+            connection_params=get_mcp_server_params(),
+        )
+    ]
 
 
 # =============================================================================
@@ -97,7 +107,7 @@ profile_agent = Agent(
         "update their details, or view their profile information."
     ),
     instruction=PROFILE_AGENT_INSTRUCTION,
-    tools=PROFILE_TOOLS,
+    tools=get_mcp_tools(),
 )
 
 
@@ -182,7 +192,7 @@ planner_agent = Agent(
         "student wants to study a chapter and needs a plan."
     ),
     instruction=PLANNER_AGENT_INSTRUCTION,
-    tools=PLANNER_TOOLS,
+    tools=get_mcp_tools(),
 )
 
 
@@ -267,7 +277,7 @@ teacher_agent = Agent(
         "Use this agent when it's time to teach/explain a topic from the study plan."
     ),
     instruction=TEACHER_AGENT_INSTRUCTION,
-    tools=TEACHER_TOOLS,
+    tools=get_mcp_tools(),
 )
 
 
@@ -355,7 +365,7 @@ evaluator_agent = Agent(
         "to be tested on their understanding."
     ),
     instruction=EVALUATOR_AGENT_INSTRUCTION,
-    tools=EVALUATOR_TOOLS,
+    tools=get_mcp_tools(),
 )
 
 

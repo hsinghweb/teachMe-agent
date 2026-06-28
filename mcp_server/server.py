@@ -460,11 +460,9 @@ def _update_profile_with_progress(student_id: str, chapter_key: str, accuracy: f
         json.dump(profile, f, indent=2, ensure_ascii=False)
 
 
-# =============================================================================
-# Entry point — run the MCP server standalone for testing
-# =============================================================================
 if __name__ == "__main__":
-    print("🚀 Starting TeachMe MCP Server...")
-    print(f"📁 Data directory: {DATA_DIR}")
-    print("Tools available: parse_pdf, save_profile, get_profile, save_progress, get_progress, save_study_plan, get_study_plan")
+    import sys
+    print("🚀 Starting TeachMe MCP Server...", file=sys.stderr)
+    print(f"📁 Data directory: {DATA_DIR}", file=sys.stderr)
+    print("Tools available: parse_pdf, save_profile, get_profile, save_progress, get_progress, save_study_plan, get_study_plan", file=sys.stderr)
     mcp.run(transport="stdio")
